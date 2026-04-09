@@ -1,6 +1,3 @@
-ca v6 · HTML
-Copiar
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -302,7 +299,7 @@ textarea.form-control{resize:vertical;min-height:140px;line-height:1.7;}
 /* ── MAPA ── */
 .map-section{margin-bottom:18px;}
 .map-frame{
-  width:100%;height:320px;border-radius:10px;
+  width:100%;height:380px;border-radius:10px;
   border:2px solid var(--border);overflow:hidden;
   background:var(--light);position:relative;
 }
@@ -957,23 +954,25 @@ function exportarPDF() {
   y += 4;
  
   const sec = (t) => {
-    if (y > 260) { doc.addPage(); addHeader(); y = 42; }
-    y += 4;
+    if (y > 255) { doc.addPage(); addHeader(); y = 44; }
+    y += 5;
     doc.setTextColor(28,30,33); doc.setFontSize(10.5); doc.setFont('helvetica','bold');
     doc.text(t, W/2, y, {align:'center'});
     y += 2;
-    // Línea inferior solo bajo el texto del capítulo
     const tw = doc.getTextWidth(t);
     doc.setDrawColor(28,30,33); doc.setLineWidth(0.6);
     doc.line(W/2 - tw/2, y, W/2 + tw/2, y);
-    y += 7;
+    y += 8;
     doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
   };
  
   const blk = (txt) => {
     if (!txt) return;
     const lines = doc.splitTextToSize(txt, CW-4);
-    lines.forEach(l => { if(y>278){doc.addPage();addHeader();y=42;} doc.text(l, M+2, y); y+=5; });
+    lines.forEach(l => { 
+      if(y>278){ doc.addPage(); addHeader(); y=44; } 
+      doc.text(l, M+2, y); y+=5; 
+    });
     y += 3;
   };
  
@@ -991,7 +990,7 @@ function exportarPDF() {
   if (fotos.length) {
     const fW = (CW-6)/2;
     fotos.forEach((f,i) => {
-      if (y > 230) { doc.addPage(); y = 20; }
+      if (y > 230) { doc.addPage(); addHeader(); y = 44; }
       const x = M + (i%2)*(fW+6);
       try { doc.addImage(f.src,'JPEG',x,y,fW,fW*0.7); } catch(e){}
       if (f.caption) { doc.setFontSize(7); doc.text(f.caption,x,y+fW*0.7+3); }
@@ -1004,7 +1003,7 @@ function exportarPDF() {
   if (d.observaciones) { doc.setFontSize(8.5); doc.setFont('helvetica','bold'); doc.text('Se observa que:', M+2, y); y+=5; doc.setFont('helvetica','normal'); doc.setFontSize(9); blk(d.observaciones); }
   if (d.recomendaciones) { doc.setFontSize(8.5); doc.setFont('helvetica','bold'); doc.text('Se recomienda:', M+2, y); y+=5; doc.setFont('helvetica','normal'); doc.setFontSize(9); blk(d.recomendaciones); }
  
-  if (y > 250) { doc.addPage(); y = 20; }
+  if (y > 250) { doc.addPage(); addHeader(); y = 44; }
   y += 10;
   blk('En los anteriores términos se expide el concepto requerido.');
   blk('Atentamente,');
@@ -1022,11 +1021,13 @@ function exportarPDF() {
   const pc = doc.internal.getNumberOfPages();
   for (let i=1;i<=pc;i++) {
     doc.setPage(i);
-    doc.setFontSize(7); doc.setTextColor(160);
-    doc.text(`Página ${i} de ${pc} — Agencia de Renovación del Territorio`, W/2, 292, {align:'center'});
-    // Footer line
+    // Re-draw header on every page
+    addHeader();
+    // Footer
     doc.setDrawColor(200,205,213); doc.setLineWidth(0.3);
     doc.line(M, 288, W-M, 288);
+    doc.setFontSize(7); doc.setTextColor(150,150,150);
+    doc.text(`Página ${i} de ${pc} — Agencia de Renovación del Territorio`, W/2, 292, {align:'center'});
   }
  
   const fn = (d.asunto||d.municipio||'informe').replace(/\s+/g,'_');
@@ -1093,7 +1094,7 @@ function verEnMapa() {
   const lat = document.getElementById('proj_lat').value.trim();
   const lng = document.getElementById('proj_lng').value.trim();
   if (!lat || !lng) { toast('Ingresa latitud y longitud'); return; }
-  const url = `https://www.google.com/maps?q=${lat},${lng}&z=15`;
+  const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
   window.open(url, '_blank');
 }
  
@@ -1103,9 +1104,11 @@ function cargarMapa() {
   if (!lat || !lng) { toast('Ingresa latitud y longitud primero'); return; }
   const iframe = document.getElementById('mapIframe');
   const placeholder = document.getElementById('mapPlaceholder');
-  iframe.src = `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
+  // Usar OpenStreetMap que no requiere API key
+  iframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(lng)-0.01},${parseFloat(lat)-0.01},${parseFloat(lng)+0.01},${parseFloat(lat)+0.01}&layer=mapnik&marker=${lat},${lng}`;
   iframe.style.display = 'block';
   placeholder.style.display = 'none';
+  toast('Mapa cargado correctamente');
 }
  
 // ══ TOAST ══
@@ -1121,4 +1124,3 @@ window.addEventListener('load', () => { renderLista(); });
 </script>
 </body>
 </html>
- 
