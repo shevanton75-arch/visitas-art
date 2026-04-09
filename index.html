@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Informe de Visita Técnica — ART</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --black:#0A0B0D;
+  --dark:#1C1E21;
+  --mid:#3D4148;
+  --gray:#374151;
+  --border:#B8BCC5;
+  --border2:#C8CDD5;
+  --bg:#E8E9ED;
+  --white:#FFFFFF;
+  --accent:#1C1E21;
+  --accent2:#3D4148;
+  --light:#D8DAE0;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;font-size:15px;}
+ 
+/* ── OFFLINE ── */
+.offline-bar{
+  background:var(--dark);color:rgba(255,255,255,0.8);
+  padding:7px 24px;font-size:11px;font-weight:500;
+  letter-spacing:0.5px;display:none;
+  align-items:center;justify-content:center;gap:8px;
+}
+.offline-bar.show{display:flex;}
+ 
+/* ── HEADER ── */
+.app-header{
+  background:var(--white);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:200;
+}
+.header-main{
+  max-width:1080px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 24px;
+}
+.brand{display:flex;align-items:center;gap:14px;}
+.brand-mark{
+  width:40px;height:40px;border-radius:8px;
+  background:var(--dark);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Playfair Display',serif;
+  font-size:13px;font-weight:700;color:var(--white);
+  letter-spacing:1px;
+}
+.brand-name{
+  font-family:'Playfair Display',serif;
+  font-size:17px;font-weight:600;color:var(--black);
+  line-height:1.2;
+}
+.brand-sub{font-size:11px;color:var(--gray);letter-spacing:0.5px;margin-top:1px;}
+.header-actions{display:flex;gap:8px;align-items:center;}
+ 
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:9px 18px;border-radius:7px;border:none;
+  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+  cursor:pointer;transition:all 0.18s;letter-spacing:0.2px;
+}
+.btn-dark{background:var(--dark);color:var(--white);}
+.btn-dark:hover{background:var(--black);}
+.btn-ghost{background:transparent;color:var(--mid);border:1px solid var(--border);}
+.btn-ghost:hover{background:var(--light);border-color:var(--mid);}
+.btn-sm{padding:7px 13px;font-size:11px;}
+.btn[style*="display:none"]{display:none!important;}
+ 
+/* ── NAV TABS ── */
+.nav-tabs{
+  background:var(--white);
+  border-bottom:1px solid var(--border);
+  display:flex;overflow-x:auto;
+  scrollbar-width:none;
+  padding:0 24px;
+  max-width:100%;
+}
+.nav-tabs::-webkit-scrollbar{display:none;}
+.nav-tab{
+  padding:12px 16px;font-size:12px;font-weight:500;
+  color:var(--gray);border:none;background:none;
+  cursor:pointer;white-space:nowrap;
+  border-bottom:2px solid transparent;
+  font-family:'DM Sans',sans-serif;
+  transition:all 0.18s;letter-spacing:0.3px;
+}
+.nav-tab:hover{color:var(--dark);}
+.nav-tab.active{color:var(--black);border-bottom-color:var(--black);font-weight:600;}
+ 
+/* ── MAIN ── */
+.main{max-width:1080px;margin:0 auto;padding:32px 24px;}
+ 
+/* ── SECTIONS ── */
+.section{display:none;animation:fadeIn 0.2s ease;}
+.section.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+ 
+/* ── PAGE TITLE ── */
+.page-title{
+  margin-bottom:28px;
+  padding-bottom:20px;
+  border-bottom:1px solid var(--border);
+}
+.page-title h2{
+  font-family:'Playfair Display',serif;
+  font-size:26px;font-weight:700;color:var(--black);
+  margin-bottom:6px;
+}
+.page-title p{font-size:14px;color:var(--gray);font-weight:500;}
+ 
+/* ── STATS ── */
+.stats-row{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:12px;margin-bottom:28px;
+}
+.stat-card{
+  background:var(--white);border:2px solid var(--border);
+  border-radius:10px;padding:18px 20px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.05);
+}
+.stat-val{
+  font-family:'Playfair Display',serif;
+  font-size:28px;font-weight:700;color:var(--black);
+  margin-bottom:4px;
+}
+.stat-key{font-size:11px;color:var(--gray);font-weight:500;letter-spacing:0.5px;text-transform:uppercase;}
+ 
+/* ── LISTA ── */
+.informes-list{display:flex;flex-direction:column;gap:2px;}
+.informe-item{
+  background:var(--white);border:2px solid var(--border);
+  border-radius:10px;padding:18px 20px;
+  display:flex;align-items:center;gap:16px;
+  cursor:pointer;transition:all 0.18s;margin-bottom:8px;
+}
+.informe-item:hover{border-color:var(--mid);box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+.informe-num{
+  width:36px;height:36px;border-radius:7px;
+  background:var(--light);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:12px;
+  color:var(--gray);flex-shrink:0;
+}
+.informe-info{flex:1;min-width:0;}
+.informe-title{font-size:15px;font-weight:600;color:var(--black);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.informe-meta{font-size:12px;color:var(--gray);}
+.badge{
+  font-size:10px;font-weight:600;padding:4px 10px;border-radius:20px;
+  letter-spacing:0.3px;white-space:nowrap;flex-shrink:0;
+}
+.badge-sync{background:var(--light);color:var(--mid);border:1px solid var(--border);}
+.badge-pending{background:var(--dark);color:var(--white);}
+.item-actions{display:flex;gap:6px;flex-shrink:0;}
+.ia-btn{
+  width:32px;height:32px;border-radius:6px;border:1px solid var(--border);
+  background:var(--white);color:var(--gray);font-size:13px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+}
+.ia-btn:hover{background:var(--light);color:var(--dark);}
+.ia-btn.del:hover{background:#FEE2E2;border-color:#FECACA;color:#B91C1C;}
+ 
+/* ── EMPTY STATE ── */
+.empty-state{
+  text-align:center;padding:60px 20px;
+  border:1px dashed var(--border);border-radius:12px;
+  background:var(--white);
+}
+.empty-icon{font-size:40px;margin-bottom:12px;opacity:0.4;}
+.empty-title{font-size:15px;font-weight:600;color:var(--dark);margin-bottom:6px;}
+.empty-sub{font-size:13px;color:var(--gray);}
+ 
+/* ── CARD ── */
+.card{
+  background:var(--white);border:2px solid var(--border);
+  border-radius:12px;overflow:hidden;margin-bottom:20px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+}
+.card-header{
+  padding:16px 24px;border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;gap:10px;
+}
+.card-num{
+  width:26px;height:26px;border-radius:5px;
+  background:var(--dark);color:var(--white);
+  font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.card-title{font-size:13px;font-weight:600;color:var(--black);letter-spacing:0.2px;}
+.card-body{padding:24px;}
+ 
+/* ── MEMBRETE ── */
+.membrete-wrap{
+  border:1px solid var(--border);border-radius:10px;
+  overflow:hidden;margin-bottom:8px;
+}
+.membrete-head{
+  background:var(--dark);padding:18px 24px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+}
+.membrete-logos{display:flex;align-items:center;gap:16px;}
+.mem-logo{
+  padding:6px 14px;border:1px solid rgba(255,255,255,0.15);
+  border-radius:6px;text-align:center;
+}
+.mem-logo-name{color:rgba(255,255,255,0.9);font-weight:700;font-size:12px;line-height:1.3;}
+.mem-logo-sub{color:rgba(255,255,255,0.4);font-size:9px;letter-spacing:0.5px;}
+.mem-divider{width:1px;height:32px;background:rgba(255,255,255,0.15);}
+.membrete-heading{
+  flex:1;text-align:center;
+  font-family:'Playfair Display',serif;
+  font-size:17px;color:var(--white);font-weight:600;
+}
+.membrete-grid{display:grid;grid-template-columns:1fr 1fr;}
+.mem-field{padding:14px 18px;border-bottom:2px solid var(--border2);border-right:2px solid var(--border2);}
+.mem-field:nth-child(even){border-right:none;}
+.mem-field.full{grid-column:1/-1;border-right:none;}
+.mem-field:last-child,.mem-field:nth-last-child(2){border-bottom:none;}
+.mem-label{font-size:10px;font-weight:800;color:var(--black);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:6px;}
+.mem-input{width:100%;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--black);background:transparent;font-weight:400;}
+.mem-input::placeholder{color:var(--border);font-style:italic;}
+textarea.mem-input{resize:vertical;min-height:48px;line-height:1.5;}
+ 
+/* ── FORM ── */
+.form-group{margin-bottom:20px;}
+.form-label{display:block;font-size:11px;font-weight:800;color:var(--black);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px;}
+.form-control{
+  width:100%;padding:13px 16px;
+  border:2px solid var(--border);border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:15px;color:var(--black);
+  background:var(--white);outline:none;
+  transition:border-color 0.18s;font-weight:400;
+}
+.form-control:focus{border-color:var(--black);box-shadow:0 0 0 3px rgba(28,30,33,0.08);}
+textarea.form-control{resize:vertical;min-height:140px;line-height:1.7;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.form-grid .full{grid-column:1/-1;}
+ 
+/* ── AUDIO ── */
+.audio-card{
+  background:var(--dark);border-radius:10px;
+  padding:18px 20px;margin-bottom:18px;
+}
+.audio-card-title{
+  color:rgba(255,255,255,0.7);font-size:11px;font-weight:600;
+  letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;
+}
+.audio-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.abtn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 16px;border-radius:6px;border:none;
+  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+  cursor:pointer;transition:all 0.18s;
+}
+.abtn-rec{background:rgba(255,255,255,0.12);color:var(--white);border:1px solid rgba(255,255,255,0.2);}
+.abtn-rec:hover,.abtn-rec.on{background:rgba(255,255,255,0.2);}
+.abtn-rec.on::before{content:'● ';color:#F87171;}
+.abtn-stop{background:transparent;color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.1);}
+.abtn-use{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.12);}
+.abtn-use:hover{background:rgba(255,255,255,0.15);color:var(--white);}
+.audio-status{font-size:11px;color:rgba(255,255,255,0.4);margin-top:10px;}
+.transcript-box{
+  background:rgba(255,255,255,0.05);border-radius:7px;
+  padding:12px 14px;margin-top:10px;
+  color:rgba(255,255,255,0.65);font-size:12px;line-height:1.6;
+  min-height:36px;font-style:italic;
+  border:1px solid rgba(255,255,255,0.06);
+}
+ 
+/* ── FOTOS ── */
+.fotos-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:10px;margin-top:4px;
+}
+.foto-card{
+  position:relative;border-radius:8px;overflow:hidden;
+  border:1px solid var(--border);background:var(--light);
+  aspect-ratio:4/3;
+}
+.foto-card img{width:100%;height:100%;object-fit:cover;display:block;}
+.foto-caption{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,0.6));
+  padding:8px 10px;
+}
+.foto-caption input{width:100%;border:none;background:transparent;color:white;font-size:11px;font-family:'DM Sans',sans-serif;outline:none;}
+.foto-caption input::placeholder{color:rgba(255,255,255,0.4);}
+.foto-del{
+  position:absolute;top:6px;right:6px;
+  width:22px;height:22px;border-radius:50%;
+  background:rgba(0,0,0,0.5);border:none;
+  color:white;font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.foto-add-btn{
+  border:1px dashed var(--border);border-radius:8px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;cursor:pointer;color:var(--gray);
+  transition:all 0.18s;aspect-ratio:4/3;
+  font-size:11px;font-weight:500;
+}
+.foto-add-btn:hover{border-color:var(--mid);color:var(--dark);background:var(--light);}
+.foto-add-btn span{font-size:22px;opacity:0.4;}
+ 
+/* ── FIRMA ── */
+.firma-wrap{
+  border:2px solid var(--border);border-radius:10px;
+  padding:20px;background:var(--white);margin-top:4px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.05);
+}
+.firma-label{font-size:11px;font-weight:800;color:var(--black);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:12px;}
+.firma-canvas{border:2px dashed var(--border);border-radius:8px;background:#FAFBFC;cursor:crosshair;display:block;touch-action:none;box-shadow:inset 0 1px 4px rgba(0,0,0,0.06);}
+.firma-clear{margin-top:8px;}
+ 
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border2);margin:24px 0;}
+ 
+/* ── NAV BOTTOM ── */
+.nav-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid var(--border2);}
+ 
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:20px;right:20px;z-index:9999;
+  background:var(--dark);color:var(--white);
+  padding:11px 18px;border-radius:8px;
+  font-size:12px;font-weight:500;letter-spacing:0.2px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.2);
+  transform:translateY(60px);opacity:0;
+  transition:all 0.25s;pointer-events:none;
+}
+.toast.show{transform:translateY(0);opacity:1;}
+ 
+@media(max-width:640px){
+  .form-grid,.stats-row,.membrete-grid{grid-template-columns:1fr;}
+  .form-grid .full,.membrete-grid .full{grid-column:1;}
+  .mem-field{border-right:none;}
+  .header-main{padding:12px 16px;}
+  .main{padding:20px 14px;}
+}
+</style>
+</head>
+<body>
+ 
+<div class="offline-bar" id="offlineBar">
+  Sin conexión — Los cambios se guardan localmente
+</div>
+ 
+<!-- HEADER -->
+<header class="app-header">
+  <div class="header-main">
+    <div class="brand">
+      <div class="brand-mark">ART</div>
+      <div>
+        <div class="brand-name">Visitas Técnicas</div>
+        <div class="brand-sub">Agencia de Renovación del Territorio</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost btn-sm" onclick="nuevoInforme()">+ Nuevo informe</button>
+      <button class="btn btn-ghost btn-sm" id="btnPDF" onclick="exportarPDF()" style="display:none">Exportar PDF</button>
+      <button class="btn btn-ghost btn-sm" id="btnWord" onclick="exportarWord()" style="display:none">Exportar Word</button>
+      <button class="btn btn-dark btn-sm" id="btnGuardar" onclick="guardarInforme()" style="display:none">Guardar</button>
+    </div>
+  </div>
+  <nav class="nav-tabs" id="navTabs">
+    <button class="nav-tab active" id="tab-lista" onclick="showTab('lista')">Informes</button>
+    <button class="nav-tab" id="tab-membrete" onclick="showTab('membrete')" style="display:none">Encabezado</button>
+    <button class="nav-tab" id="tab-motivo" onclick="showTab('motivo')" style="display:none">Motivo</button>
+    <button class="nav-tab" id="tab-alcance" onclick="showTab('alcance')" style="display:none">Alcance</button>
+    <button class="nav-tab" id="tab-localizacion" onclick="showTab('localizacion')" style="display:none">Localización</button>
+    <button class="nav-tab" id="tab-metodologia" onclick="showTab('metodologia')" style="display:none">Metodología</button>
+    <button class="nav-tab" id="tab-descripcion" onclick="showTab('descripcion')" style="display:none">Descripción</button>
+    <button class="nav-tab" id="tab-fotos" onclick="showTab('fotos')" style="display:none">Fotografías</button>
+    <button class="nav-tab" id="tab-conclusiones" onclick="showTab('conclusiones')" style="display:none">Conclusiones</button>
+    <button class="nav-tab" id="tab-firma" onclick="showTab('firma')" style="display:none">Firma</button>
+  </nav>
+</header>
+ 
+<main class="main">
+ 
+  <!-- ── LISTA ── -->
+  <div class="section active" id="sec-lista">
+    <div class="page-title">
+      <h2>Mis Informes</h2>
+      <p>Informes de visita técnica guardados en este dispositivo</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-val" id="statTotal">0</div><div class="stat-key">Total</div></div>
+      <div class="stat-card"><div class="stat-val" id="statSync">0</div><div class="stat-key">Sincronizados</div></div>
+      <div class="stat-card"><div class="stat-val" id="statPend">0</div><div class="stat-key">Pendientes</div></div>
+    </div>
+    <div id="informesList"></div>
+  </div>
+ 
+  <!-- ── ENCABEZADO ── -->
+  <div class="section" id="sec-membrete">
+    <div class="page-title">
+      <h2>Encabezado del Informe</h2>
+      <p>Información general e identificación del informe</p>
+    </div>
+    <div class="membrete-wrap">
+      <div class="membrete-head">
+        <div class="membrete-logos">
+          <div class="mem-logo">
+            <div class="mem-logo-name">🇨🇴 Colombia</div>
+            <div class="mem-logo-sub">Potencia de la Vida</div>
+          </div>
+          <div class="mem-divider"></div>
+          <div class="mem-logo">
+            <div class="mem-logo-name">ART</div>
+            <div class="mem-logo-sub">Renovación del Territorio</div>
+          </div>
+        </div>
+        <div class="membrete-heading">INFORME TÉCNICO DE VISITA</div>
+      </div>
+      <div class="membrete-grid">
+        <div class="mem-field full">
+          <div class="mem-label">Ciudad y Fecha</div>
+          <input class="mem-input" id="ciudad_fecha" type="text" placeholder="Ej: Bogotá D.C., miércoles 9 de abril de 2026">
+        </div>
+        <div class="mem-field full">
+          <div class="mem-label">Asunto</div>
+          <input class="mem-input" id="asunto" type="text" placeholder="Asunto del informe">
+        </div>
+        <div class="mem-field">
+          <div class="mem-label">Oficio de Solicitud</div>
+          <input class="mem-input" id="oficio_solicitud" type="text" placeholder="Número del oficio">
+        </div>
+        <div class="mem-field">
+          <div class="mem-label">Fecha de Solicitud</div>
+          <input class="mem-input" id="fecha_solicitud" type="date">
+        </div>
+        <div class="mem-field full">
+          <div class="mem-label">Dirección / Municipio</div>
+          <input class="mem-input" id="direccion" type="text" placeholder="Dirección o municipio visitado">
+        </div>
+        <div class="mem-field full">
+          <div class="mem-label">Objetivo</div>
+          <textarea class="mem-input" id="objetivo" placeholder="Objetivo de la visita técnica" rows="2"></textarea>
+        </div>
+        <div class="mem-field full">
+          <div class="mem-label">Solicitante</div>
+          <input class="mem-input" id="solicitante" type="text" placeholder="Nombre del solicitante o entidad">
+        </div>
+      </div>
+    </div>
+    <div class="nav-bottom">
+      <span></span>
+      <button class="btn btn-dark" onclick="nextTab('motivo')">Continuar →</button>
+    </div>
+  </div>
+ 
+  <!-- ── MOTIVO ── -->
+  <div class="section" id="sec-motivo">
+    <div class="page-title"><h2>Motivo de la Visita</h2><p>Describa la razón que originó la visita técnica</p></div>
+    <div class="form-group">
+      <label class="form-label">Motivo</label>
+      <textarea class="form-control" id="motivo" rows="10" placeholder="Describa el motivo que originó la visita técnica..."></textarea>
+    </div>
+    <div class="nav-bottom">
+      <button class="btn btn-ghost" onclick="nextTab('membrete')">← Anterior</button>
+      <button class="btn btn-dark" onclick="nextTab('alcance')">Continuar →</button>
+    </div>
+  </div>
+ 
+  <!-- ── ALCANCE ── -->
+  <div class="section" id="sec-alcance">
+    <div class="page-title"><h2>Alcance de la Visita Técnica</h2><p>Defina el alcance de las actividades realizadas</p></div>
+    <div class="form-group">
+      <label class="form-label">Alcance</label>
+      <textarea class="form-control" id="alcance" rows="10" placeholder="Defina el alcance de la visita técnica realizada..."></textarea>
+    </div>
+    <div class="nav-bottom">
+      <button class="btn btn-ghost" onclick="nextTab('motivo')">← Anterior</button>
+      <button class="btn btn-dark" onclick="nextTab('localizacion')">Continuar →</button>
+    </div>
+  </div>
+ 
+  <!-- ── LOCALIZACIÓN ── -->
+  <div class="section" id="sec-localizacion">
+    <div class="page-title"><h2>Localización del Lugar de Visita</h2><p>Datos de ubicación del sitio inspeccionado</p></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Departamento</label>
+        <input type="text" class="form-control" id="departamento" placeholder="Ej: Antioquia">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Municipio</label>
+        <input type="text" class="form-control" id="municipio" placeholder="Ej: Turbo">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Vereda / Corregimiento</label>
+        <input type="text" class="form-control" id="vereda" placeholder="Nombre de la vereda">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Coordenadas GPS</label>
+        <input type="text" class="form-control" id="coordenadas" placeholder="Lat: 8.0922, Lon: -76.7312">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha de la Visita</label>
+        <input type="date" class="form-control" id="fecha_visita">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Hora de Inicio</label>
+        <input type="time" class="form-control" id="hora_inicio">
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Descripción de Localización</label>
+        <textarea class="form-control" id="localizacion" rows="5" placeholder="Describa la localización del lugar visitado..."></textarea>
+      </div>
+    </div>
+    <div class="nav-bottom">
+      <button class="btn btn-ghost" onclick="nextTab('alcance')">← Anterior</button>
+      <button class="btn btn-dark" onclick="nextTab('metodologia')">Continuar →</button>
+    </div>
+  </div>
+ 
+  <!-- ── METODOLOGÍA ── -->
+  <div class="section" id="sec-metodologia">
+    <div class="page-title"><h2>Metodología</h2><p>Describa el método empleado — puede dictar con su voz</p></div>
+    <div class="audio-card">
+      <div class="audio-card-title">Transcripción de voz</div>
+      <div class="audio-row">
+        <button class="abtn abtn-rec" id="btnGrab1" onclick="toggleGrabacion(1)">Grabar</button>
+        <button class="abtn abtn-use" onclick="usarTranscripcion(1)">Insertar en metodología</button>
+        <button class="abtn abtn-stop" onclick="limpiarTranscript(1)">Limpiar</button>
+      </div>
+      <div class="audio-status" id="audioSt1">Presiona Grabar y habla — el texto aparecerá aquí</div>
+      <div class="transcript-box" id="transcript1">—</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Metodología</label>
+      <textarea class="form-control" id="metodologia" rows="10" placeholder="Describa la metodología empleada durante la visita técnica..."></textarea>
+    </div>
+    <div class="nav-bottom">
+      <button class="btn btn-ghost" onclick="nextTab('localizacion')">← Anterior</button>
+      <button class="btn btn-dark" onclick="nextTab('descripcion')">Continuar →</button>
+    </div>
+  </div>
+ 
+  <!-- ── DESCRIPCIÓN ── -->
+  <div class="section" id="sec-descripcion">
+    <div class="page-title"><h2>Descripción General de la Visita</h2><p>Relate el desarrollo de la visita y los hallazgos</p></div>
+    <div class="audio-card">
+      <div class="audio-card-title">Notas de campo por voz</div>
+      <div class="audio-row">
+        <button class="abtn abtn-rec" id="btnGrab2" onclick="toggleGrabacion(2)">Grabar</button>
+        <button class="abtn abtn-use" onclick="usarTranscripcion(2)">Insertar en descripción</button>
+        <button class="abtn abtn-stop" onclick="limpiarTranscript(2)">Limpiar</button>
+      </div>
+      <div class="audio-status" id="audioSt2">Graba tus notas de campo en tiempo real</div>
+      <div class="transcript-box" id="transcript2">—</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Descripción General</label>
+      <textarea class="form-control" id="descripcion" rows="12" placeholder="Describa detalladamente el desarrollo de la visita, actividades ejecutadas y hallazgos..."></textarea>
+    </div>
+    <div class="nav-bottom">
+      <button class="btn btn-ghost" onclick="nextTab('metodologia')">← Anterior</button>
+      <button class="btn btn-dark" onclick="nextTab('fotos')">Continuar →</button>
+    </div>
+  </div>
+ 
+  <!-- ── FOTOGRAFÍAS ── -->
+  <div class="section" id="sec-fotos">
+    <div class="page-title"><h2>Registro Fotográfico</h2><p>Adjunte las fotografías del registro de campo</p></div>
+    <div class="fotos-grid" id="fotosGrid">
+      <div class="foto-add-btn" onclick="document.getElementById('fotoInput').click()">
+        <span>+</span>Agregar fotografía
+      </div>
+    </div>
+    <input type="file" id="fotoInput" accept="image/*" multiple style="display:none" onchange="agregarFotos(this.files)">
+    <div class="nav-bottom">
+      <button class="btn btn-ghost" onclick="nextTab('descripcion')">← Anterior</button>
+      <button class="btn btn-dark" onclick="nextTab('conclusiones')">Continuar →</button>
+    </div>
+  </div>
+ 
+  <!-- ── CONCLUSIONES ── -->
+  <div class="section" id="sec-conclusiones">
+    <div class="page-title"><h2>Conclusiones, Observaciones y Recomendaciones</h2></div>
+    <div class="form-group">
+      <label class="form-label">La visita permite concluir que:</label>
+      <textarea class="form-control" id="conclusiones" rows="5" placeholder="Conclusiones de la visita técnica..."></textarea>
+    </div>
+    <div class="divider"></div>
+    <div class="form-group">
+      <label class="form-label">Se observa que:</label>
+      <textarea class="form-control" id="observaciones" rows="5" placeholder="Observaciones relevantes..."></textarea>
+    </div>
+    <div class="divider"></div>
+    <div class="form-group">
+      <label class="form-label">Se realizan las siguientes recomendaciones:</label>
+      <textarea class="form-control" id="recomendaciones" rows="5" placeholder="Recomendaciones..."></textarea>
+    </div>
+    <div class="nav-bottom">
+      <button class="btn btn-ghost" onclick="nextTab('fotos')">← Anterior</button>
+      <button class="btn btn-dark" onclick="nextTab('firma')">Continuar →</button>
+    </div>
+  </div>
+ 
+  <!-- ── FIRMA ── -->
+  <div class="section" id="sec-firma">
+    <div class="page-title"><h2>Datos del Funcionario y Firma</h2></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Nombre del Funcionario / Contratista</label>
+        <input type="text" class="form-control" id="func_nombre" placeholder="Nombre completo">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Profesión / Cargo</label>
+        <input type="text" class="form-control" id="func_cargo" placeholder="Ej: Ingeniero Civil — BCNNA-ART">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Firma Digital</label>
+      <div class="firma-wrap">
+        <div class="firma-label">Dibuja tu firma aquí (dedo o mouse)</div>
+        <canvas class="firma-canvas" id="firmaCanvas" width="560" height="140" style="width:100%;max-width:560px;"></canvas>
+        <div class="firma-clear">
+          <button class="btn btn-ghost btn-sm" onclick="limpiarFirma()">Limpiar firma</button>
+        </div>
+      </div>
+    </div>
+    <div class="nav-bottom">
+      <button class="btn btn-ghost" onclick="nextTab('conclusiones')">← Anterior</button>
+      <button class="btn btn-dark" onclick="guardarInforme()">Guardar informe</button>
+    </div>
+  </div>
+ 
+</main>
+ 
+<div class="toast" id="toast"></div>
+ 
+<script>
+// ══ ESTADO ══
+let informes = JSON.parse(localStorage.getItem('art_vt') || '[]');
+let current = null;
+let fotos = [];
+let rec1 = null, rec2 = null;
+let rec1On = false, rec2On = false;
+let fCtx = null, fDrawing = false;
+ 
+// ══ OFFLINE ══
+const checkNet = () => {
+  document.getElementById('offlineBar').classList.toggle('show', !navigator.onLine);
+  if (navigator.onLine) syncPending();
+};
+window.addEventListener('online', checkNet);
+window.addEventListener('offline', checkNet);
+checkNet();
+ 
+// ══ TABS ══
+const EDIT_TABS = ['membrete','motivo','alcance','localizacion','metodologia','descripcion','fotos','conclusiones','firma'];
+ 
+function showTab(t) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-'+t).classList.add('active');
+  const btn = document.getElementById('tab-'+t);
+  if (btn) btn.classList.add('active');
+  window.scrollTo(0,0);
+  if (t === 'firma') setTimeout(initFirma, 100);
+}
+ 
+function nextTab(t) { autoSave(); showTab(t); }
+ 
+function showEditTabs() {
+  EDIT_TABS.forEach(t => { const b = document.getElementById('tab-'+t); if(b) b.style.display=''; });
+  ['btnPDF','btnWord','btnGuardar'].forEach(id => { const b = document.getElementById(id); if(b) b.style.removeProperty('display'); });
+}
+function hideEditTabs() {
+  EDIT_TABS.forEach(t => { const b = document.getElementById('tab-'+t); if(b) b.style.display='none'; });
+  ['btnPDF','btnWord','btnGuardar'].forEach(id => document.getElementById(id).style.display='none');
+}
+ 
+// ══ NUEVO ══
+function nuevoInforme() {
+  current = { id: Date.now()+'', creado: new Date().toISOString(), sync: false, datos: {} };
+  fotos = [];
+  clearFields();
+  showEditTabs();
+  showTab('membrete');
+}
+ 
+function clearFields() {
+  const ids = ['ciudad_fecha','asunto','oficio_solicitud','fecha_solicitud','direccion','objetivo','solicitante',
+    'motivo','alcance','departamento','municipio','vereda','coordenadas','localizacion','fecha_visita','hora_inicio',
+    'metodologia','descripcion','conclusiones','observaciones','recomendaciones','func_nombre','func_cargo'];
+  ids.forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  fotos = [];
+  renderFotos();
+  if (fCtx) fCtx.clearRect(0, 0, 560, 140);
+}
+ 
+// ══ GET/SET DATOS ══
+function g(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+function getDatos() {
+  return {
+    ciudad_fecha:g('ciudad_fecha'), asunto:g('asunto'), oficio_solicitud:g('oficio_solicitud'),
+    fecha_solicitud:g('fecha_solicitud'), direccion:g('direccion'), objetivo:g('objetivo'),
+    solicitante:g('solicitante'), motivo:g('motivo'), alcance:g('alcance'),
+    departamento:g('departamento'), municipio:g('municipio'), vereda:g('vereda'),
+    coordenadas:g('coordenadas'), localizacion:g('localizacion'), fecha_visita:g('fecha_visita'),
+    hora_inicio:g('hora_inicio'), metodologia:g('metodologia'), descripcion:g('descripcion'),
+    conclusiones:g('conclusiones'), observaciones:g('observaciones'), recomendaciones:g('recomendaciones'),
+    func_nombre:g('func_nombre'), func_cargo:g('func_cargo'),
+    fotos: fotos,
+    firma: document.getElementById('firmaCanvas') ? document.getElementById('firmaCanvas').toDataURL() : ''
+  };
+}
+ 
+function setDatos(d) {
+  const ids = ['ciudad_fecha','asunto','oficio_solicitud','fecha_solicitud','direccion','objetivo','solicitante',
+    'motivo','alcance','departamento','municipio','vereda','coordenadas','localizacion','fecha_visita','hora_inicio',
+    'metodologia','descripcion','conclusiones','observaciones','recomendaciones','func_nombre','func_cargo'];
+  ids.forEach(id => { const el = document.getElementById(id); if(el) el.value = d[id]||''; });
+  fotos = d.fotos || [];
+  renderFotos();
+}
+ 
+// ══ SAVE ══
+function autoSave() {
+  if (!current) return;
+  current.datos = getDatos();
+  current.titulo = current.datos.asunto || current.datos.municipio || 'Sin título';
+  current.mod = new Date().toISOString();
+  const idx = informes.findIndex(i => i.id === current.id);
+  if (idx >= 0) informes[idx] = current; else informes.unshift(current);
+  localStorage.setItem('art_vt', JSON.stringify(informes));
+}
+ 
+function guardarInforme() {
+  autoSave();
+  toast('Informe guardado correctamente');
+  setTimeout(() => { hideEditTabs(); showTab('lista'); renderLista(); }, 600);
+}
+ 
+// ══ LISTA ══
+function renderLista() {
+  const n = informes.length;
+  const s = informes.filter(i=>i.sync).length;
+  document.getElementById('statTotal').textContent = n;
+  document.getElementById('statSync').textContent = s;
+  document.getElementById('statPend').textContent = n - s;
+  const el = document.getElementById('informesList');
+  if (!n) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <div class="empty-title">No hay informes aún</div>
+      <div class="empty-sub">Haz clic en "+ Nuevo informe" para comenzar</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = informes.map((inf, i) => `
+    <div class="informe-item" onclick="abrirInforme('${inf.id}')">
+      <div class="informe-num">${String(n - i).padStart(2,'0')}</div>
+      <div class="informe-info">
+        <div class="informe-title">${inf.titulo || 'Sin título'}</div>
+        <div class="informe-meta">${inf.datos.municipio||''} ${inf.datos.fecha_visita ? '· '+inf.datos.fecha_visita : ''} · ${new Date(inf.creado).toLocaleDateString('es-CO')}</div>
+      </div>
+      <span class="badge ${inf.sync?'badge-sync':'badge-pending'}">${inf.sync?'Sincronizado':'Local'}</span>
+      <div class="item-actions" onclick="event.stopPropagation()">
+        <button class="ia-btn" title="Editar" onclick="abrirInforme('${inf.id}')">✎</button>
+        <button class="ia-btn del" title="Eliminar" onclick="eliminar('${inf.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+ 
+function abrirInforme(id) {
+  current = informes.find(i => i.id === id);
+  if (!current) return;
+  setDatos(current.datos);
+  showEditTabs();
+  showTab('membrete');
+}
+ 
+function eliminar(id) {
+  if (!confirm('¿Eliminar este informe?')) return;
+  informes = informes.filter(i => i.id !== id);
+  localStorage.setItem('art_vt', JSON.stringify(informes));
+  renderLista();
+  toast('Informe eliminado');
+}
+ 
+function syncPending() {
+  informes.forEach(i => { if(!i.sync) i.sync = true; });
+  localStorage.setItem('art_vt', JSON.stringify(informes));
+  renderLista();
+}
+ 
+// ══ FOTOS ══
+function agregarFotos(files) {
+  Array.from(files).forEach(f => {
+    const r = new FileReader();
+    r.onload = e => { fotos.push({src:e.target.result,caption:''}); renderFotos(); };
+    r.readAsDataURL(f);
+  });
+}
+ 
+function renderFotos() {
+  const g = document.getElementById('fotosGrid');
+  g.innerHTML = fotos.map((f,i) => `
+    <div class="foto-card">
+      <img src="${f.src}">
+      <div class="foto-caption"><input type="text" placeholder="Pie de foto..." value="${f.caption||''}" onchange="fotos[${i}].caption=this.value" onclick="event.stopPropagation()"></div>
+      <button class="foto-del" onclick="fotos.splice(${i},1);renderFotos()">✕</button>
+    </div>`).join('') +
+    `<div class="foto-add-btn" onclick="document.getElementById('fotoInput').click()"><span>+</span>Agregar fotografía</div>`;
+}
+ 
+// ══ AUDIO ══
+function toggleGrabacion(n) {
+  const has = ('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window);
+  if (!has) { toast('Usa Google Chrome para transcripción de voz'); return; }
+  if (n===1) { rec1On ? detenerRec(1) : iniciarRec(1); }
+  else { rec2On ? detenerRec(2) : iniciarRec(2); }
+}
+ 
+function iniciarRec(n) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const r = new SR();
+  r.lang = 'es-CO'; r.continuous = true; r.interimResults = true;
+  r.onresult = e => {
+    let t = '';
+    for (let i=0;i<e.results.length;i++) t += e.results[i][0].transcript;
+    document.getElementById('transcript'+n).textContent = t;
+  };
+  r.onerror = e => { document.getElementById('audioSt'+n).textContent = 'Error: '+e.error; };
+  r.start();
+  if (n===1) { rec1=r; rec1On=true; } else { rec2=r; rec2On=true; }
+  const btn = document.getElementById('btnGrab'+n);
+  btn.textContent = '⏹ Detener';
+  btn.classList.add('on');
+  document.getElementById('audioSt'+n).textContent = 'Grabando... habla ahora';
+}
+ 
+function detenerRec(n) {
+  if (n===1 && rec1) { rec1.stop(); rec1On=false; }
+  if (n===2 && rec2) { rec2.stop(); rec2On=false; }
+  const btn = document.getElementById('btnGrab'+n);
+  btn.textContent = 'Grabar';
+  btn.classList.remove('on');
+  document.getElementById('audioSt'+n).textContent = 'Grabación detenida';
+}
+ 
+function usarTranscripcion(n) {
+  const t = document.getElementById('transcript'+n).textContent;
+  if (!t || t==='—') return;
+  const target = n===1 ? 'metodologia' : 'descripcion';
+  const el = document.getElementById(target);
+  el.value = el.value ? el.value + '\n\n' + t : t;
+  toast('Transcripción insertada');
+}
+ 
+function limpiarTranscript(n) {
+  document.getElementById('transcript'+n).textContent = '—';
+  document.getElementById('audioSt'+n).textContent = 'Presiona Grabar y habla';
+}
+ 
+// ══ FIRMA ══
+function initFirma() {
+  const c = document.getElementById('firmaCanvas');
+  if (!c || fCtx) return;
+  fCtx = c.getContext('2d');
+  fCtx.strokeStyle = '#1C1E21';
+  fCtx.lineWidth = 1.8;
+  fCtx.lineCap = 'round';
+  fCtx.lineJoin = 'round';
+  const pos = e => {
+    const r = c.getBoundingClientRect();
+    const scX = c.width / r.width;
+    const scY = c.height / r.height;
+    const src = e.touches ? e.touches[0] : e;
+    return { x: (src.clientX - r.left) * scX, y: (src.clientY - r.top) * scY };
+  };
+  c.addEventListener('mousedown', e => { fDrawing=true; const p=pos(e); fCtx.beginPath(); fCtx.moveTo(p.x,p.y); });
+  c.addEventListener('mousemove', e => { if(!fDrawing) return; const p=pos(e); fCtx.lineTo(p.x,p.y); fCtx.stroke(); });
+  c.addEventListener('mouseup', () => fDrawing=false);
+  c.addEventListener('mouseleave', () => fDrawing=false);
+  c.addEventListener('touchstart', e => { e.preventDefault(); fDrawing=true; const p=pos(e); fCtx.beginPath(); fCtx.moveTo(p.x,p.y); }, {passive:false});
+  c.addEventListener('touchmove', e => { e.preventDefault(); if(!fDrawing) return; const p=pos(e); fCtx.lineTo(p.x,p.y); fCtx.stroke(); }, {passive:false});
+  c.addEventListener('touchend', () => fDrawing=false);
+}
+ 
+function limpiarFirma() {
+  if (fCtx) fCtx.clearRect(0, 0, 560, 140);
+}
+ 
+// ══ PDF ══
+function exportarPDF() {
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF('p','mm','a4');
+  const d = getDatos();
+  const M = 20, W = 210, CW = W - M*2;
+  let y = 0;
+ 
+  // Header
+  doc.setFillColor(28,30,33);
+  doc.rect(0,0,W,32,'F');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(15); doc.setFont('helvetica','bold');
+  doc.text('INFORME TÉCNICO DE VISITA', W/2, 13, {align:'center'});
+  doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.text('Agencia de Renovación del Territorio — ART', W/2, 20, {align:'center'});
+  doc.text(d.ciudad_fecha||'', W/2, 27, {align:'center'});
+  y = 40;
+ 
+  const hr = (label, val, w) => {
+    const h = Math.max(8, doc.splitTextToSize(val||'', (w||CW)-4).length * 4.5 + 4);
+    doc.setFillColor(245,246,248); doc.setDrawColor(220,222,226); doc.setLineWidth(0.2);
+    doc.rect(M, y, w||CW, h,'FD');
+    doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.setTextColor(100,110,120);
+    doc.text(label, M+2, y+3);
+    doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(28,30,33);
+    doc.text(doc.splitTextToSize(val||'', (w||CW)-4), M+2, y+6.5);
+    y += h + 1;
+  };
+ 
+  hr('ASUNTO', d.asunto);
+  // two cols
+  const h2 = 8;
+  doc.setFillColor(245,246,248); doc.setDrawColor(220,222,226); doc.setLineWidth(0.2);
+  doc.rect(M,y,CW/2,h2,'FD'); doc.rect(M+CW/2,y,CW/2,h2,'FD');
+  doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.setTextColor(100,110,120);
+  doc.text('OFICIO SOLICITUD', M+2, y+3);
+  doc.text('FECHA DE SOLICITUD', M+CW/2+2, y+3);
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(28,30,33);
+  doc.text(d.oficio_solicitud||'', M+2, y+6.5);
+  doc.text(d.fecha_solicitud||'', M+CW/2+2, y+6.5);
+  y += h2+1;
+  hr('DIRECCIÓN', d.direccion);
+  hr('OBJETIVO', d.objetivo);
+  hr('SOLICITANTE', d.solicitante);
+  y += 4;
+ 
+  const sec = (t) => {
+    if (y > 260) { doc.addPage(); y = 20; }
+    doc.setFillColor(28,30,33); doc.rect(M,y,CW,7,'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(8.5); doc.setFont('helvetica','bold');
+    doc.text(t, M+3, y+5); y += 9;
+    doc.setTextColor(28,30,33); doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  };
+ 
+  const blk = (txt) => {
+    if (!txt) return;
+    const lines = doc.splitTextToSize(txt, CW-4);
+    lines.forEach(l => { if(y>278){doc.addPage();y=20;} doc.text(l, M+2, y); y+=5; });
+    y += 3;
+  };
+ 
+  sec('1. MOTIVO DE LA VISITA'); blk(d.motivo);
+  sec('2. ALCANCE DE LA VISITA TÉCNICA'); blk(d.alcance);
+  sec('3. LOCALIZACIÓN DEL LUGAR DE VISITA');
+  blk([d.departamento?'Departamento: '+d.departamento:'', d.municipio?'Municipio: '+d.municipio:'', d.vereda?'Vereda: '+d.vereda:'', d.coordenadas?'Coordenadas: '+d.coordenadas:''].filter(Boolean).join('   '));
+  blk(d.localizacion);
+  sec('4. METODOLOGÍA'); blk(d.metodologia);
+  sec('5. DESCRIPCIÓN GENERAL DE LA VISITA'); blk(d.descripcion);
+  sec('6. REGISTRO FOTOGRÁFICO');
+  if (fotos.length) {
+    const fW = (CW-6)/2;
+    fotos.forEach((f,i) => {
+      if (y > 230) { doc.addPage(); y = 20; }
+      const x = M + (i%2)*(fW+6);
+      try { doc.addImage(f.src,'JPEG',x,y,fW,fW*0.7); } catch(e){}
+      if (f.caption) { doc.setFontSize(7); doc.text(f.caption,x,y+fW*0.7+3); }
+      if (i%2===1) y += fW*0.7 + 8;
+    });
+    if (fotos.length%2!==0) y += (CW/2)*0.7 + 8;
+  }
+  sec('7. CONCLUSIONES, OBSERVACIONES Y RECOMENDACIONES');
+  if (d.conclusiones) { doc.setFontSize(8.5); doc.setFont('helvetica','bold'); doc.text('La visita permite concluir que:', M+2, y); y+=5; doc.setFont('helvetica','normal'); doc.setFontSize(9); blk(d.conclusiones); }
+  if (d.observaciones) { doc.setFontSize(8.5); doc.setFont('helvetica','bold'); doc.text('Se observa que:', M+2, y); y+=5; doc.setFont('helvetica','normal'); doc.setFontSize(9); blk(d.observaciones); }
+  if (d.recomendaciones) { doc.setFontSize(8.5); doc.setFont('helvetica','bold'); doc.text('Se recomienda:', M+2, y); y+=5; doc.setFont('helvetica','normal'); doc.setFontSize(9); blk(d.recomendaciones); }
+ 
+  if (y > 250) { doc.addPage(); y = 20; }
+  y += 10;
+  blk('En los anteriores términos se expide el concepto requerido.');
+  blk('Atentamente,');
+  y += 8;
+ 
+  // Firma
+  const fc = document.getElementById('firmaCanvas');
+  if (fc) { try { doc.addImage(fc.toDataURL(),'PNG',M,y,60,18); } catch(e){} }
+  y += 22;
+  doc.setFontSize(9); doc.setFont('helvetica','bold');
+  doc.text(d.func_nombre||'Funcionario / Contratista', M, y); y+=5;
+  doc.setFont('helvetica','normal');
+  doc.text(d.func_cargo||'Profesión', M, y);
+ 
+  const pc = doc.internal.getNumberOfPages();
+  for (let i=1;i<=pc;i++) {
+    doc.setPage(i); doc.setFontSize(7); doc.setTextColor(160);
+    doc.text(`Página ${i} de ${pc} — Agencia de Renovación del Territorio`, W/2, 292, {align:'center'});
+  }
+ 
+  const fn = (d.asunto||d.municipio||'informe').replace(/\s+/g,'_');
+  doc.save(`Informe_Visita_${fn}_${new Date().toISOString().slice(0,10)}.pdf`);
+  toast('PDF generado correctamente');
+}
+ 
+// ══ WORD ══
+async function exportarWord() {
+  const d = getDatos();
+  toast('Generando Word...');
+  const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const p = (t,b) => `<w:p><w:r>${b?'<w:rPr><w:b/></w:rPr>':''}<w:t xml:space="preserve">${esc(t)}</w:t></w:r></w:p>`;
+  const s = t => `<w:p><w:pPr><w:spacing w:before="240" w:after="80"/></w:pPr><w:r><w:rPr><w:b/><w:sz w:val="22"/></w:rPr><w:t>${esc(t)}</w:t></w:r></w:p>`;
+ 
+  const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:body>
+${p('INFORME TÉCNICO DE VISITA',true)}
+${p('Agencia de Renovación del Territorio — ART',false)}
+${p(d.ciudad_fecha,false)}
+${p('',false)}
+${p('ASUNTO: '+(d.asunto||''),true)}
+${p('OFICIO: '+(d.oficio_solicitud||'')+'   FECHA: '+(d.fecha_solicitud||''),false)}
+${p('DIRECCIÓN: '+(d.direccion||''),false)}
+${p('OBJETIVO: '+(d.objetivo||''),false)}
+${p('SOLICITANTE: '+(d.solicitante||''),false)}
+${p('',false)}
+${s('1. MOTIVO DE LA VISITA')}${p(d.motivo)}
+${s('2. ALCANCE DE LA VISITA TÉCNICA')}${p(d.alcance)}
+${s('3. LOCALIZACIÓN')}${p([d.departamento,d.municipio,d.vereda,d.coordenadas].filter(Boolean).join(' · '))}${p(d.localizacion)}
+${s('4. METODOLOGÍA')}${p(d.metodologia)}
+${s('5. DESCRIPCIÓN GENERAL')}${p(d.descripcion)}
+${s('6. CONCLUSIONES, OBSERVACIONES Y RECOMENDACIONES')}
+${d.conclusiones?p('La visita permite concluir que:',true)+p(d.conclusiones):''}
+${d.observaciones?p('Se observa que:',true)+p(d.observaciones):''}
+${d.recomendaciones?p('Se recomienda:',true)+p(d.recomendaciones):''}
+${p('En los anteriores términos se expide el concepto requerido.',false)}
+${p('Atentamente,',false)}
+${p('',false)}
+${p(d.func_nombre||'Funcionario / Contratista',true)}
+${p(d.func_cargo||'Profesión',false)}
+${p('BCNNA-ART',false)}
+</w:body></w:document>`;
+ 
+  const zip = new JSZip();
+  zip.file('word/document.xml', xml);
+  zip.file('[Content_Types].xml',`<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`);
+  zip.file('_rels/.rels',`<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`);
+  zip.file('word/_rels/document.xml.rels',`<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>`);
+ 
+  const blob = await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `Informe_${(d.asunto||d.municipio||'visita').replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.docx`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast('Archivo Word generado');
+}
+ 
+// ══ TOAST ══
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+ 
+// ══ INIT ══
+window.addEventListener('load', () => { renderLista(); });
+</script>
+</body>
+</html>
