@@ -1,3 +1,6 @@
+Informe visita tecnica v6 · HTML
+Copiar
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,6 +10,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -299,16 +304,16 @@ textarea.form-control{resize:vertical;min-height:140px;line-height:1.7;}
 /* ── MAPA ── */
 .map-section{margin-bottom:18px;}
 .map-frame{
-  width:100%;height:380px;border-radius:10px;
+  width:100%;height:400px;border-radius:10px;
   border:2px solid var(--border);overflow:hidden;
   background:var(--light);position:relative;
 }
-.map-frame iframe{width:100%;height:100%;border:none;}
 .map-placeholder{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   height:100%;color:var(--gray);gap:8px;
 }
 .map-placeholder-icon{font-size:36px;opacity:0.4;}
+#leafletMap{width:100%;height:400px;border-radius:10px;}
 .map-coords-row{display:flex;gap:10px;margin-bottom:12px;}
 .map-coords-row .form-control{flex:1;}
 .btn-maps{
@@ -571,9 +576,9 @@ textarea.form-control{resize:vertical;min-height:140px;line-height:1.7;}
         <div class="map-placeholder" id="mapPlaceholder">
           <div class="map-placeholder-icon">🗺️</div>
           <div style="font-size:13px;font-weight:600;color:var(--dark);">Ingresa las coordenadas y carga el mapa</div>
-          <div style="font-size:12px;">O haz clic en "Ver en Google Maps"</div>
+          <div style="font-size:12px;">O haz clic en "Cargar mapa aquí"</div>
         </div>
-        <iframe id="mapIframe" style="display:none;" allowfullscreen></iframe>
+        <div id="leafletMap" style="display:none;"></div>
       </div>
     </div>
  
@@ -1098,17 +1103,38 @@ function verEnMapa() {
   window.open(url, '_blank');
 }
  
+let leafletMap = null;
+let leafletMarker = null;
+ 
 function cargarMapa() {
-  const lat = document.getElementById('proj_lat').value.trim();
-  const lng = document.getElementById('proj_lng').value.trim();
-  if (!lat || !lng) { toast('Ingresa latitud y longitud primero'); return; }
-  const iframe = document.getElementById('mapIframe');
-  const placeholder = document.getElementById('mapPlaceholder');
-  // Usar OpenStreetMap que no requiere API key
-  iframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(lng)-0.01},${parseFloat(lat)-0.01},${parseFloat(lng)+0.01},${parseFloat(lat)+0.01}&layer=mapnik&marker=${lat},${lng}`;
-  iframe.style.display = 'block';
-  placeholder.style.display = 'none';
-  toast('Mapa cargado correctamente');
+  const lat = parseFloat(document.getElementById('proj_lat').value.trim());
+  const lng = parseFloat(document.getElementById('proj_lng').value.trim());
+  if (!lat || !lng || isNaN(lat) || isNaN(lng)) { 
+    toast('Ingresa latitud y longitud válidas'); 
+    return; 
+  }
+  
+  document.getElementById('mapPlaceholder').style.display = 'none';
+  const mapDiv = document.getElementById('leafletMap');
+  mapDiv.style.display = 'block';
+ 
+  if (!leafletMap) {
+    leafletMap = L.map('leafletMap').setView([lat, lng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(leafletMap);
+    leafletMarker = L.marker([lat, lng]).addTo(leafletMap)
+      .bindPopup('<b>Ubicación del Proyecto</b><br>Lat: ' + lat + '<br>Lng: ' + lng)
+      .openPopup();
+  } else {
+    leafletMap.setView([lat, lng], 15);
+    leafletMarker.setLatLng([lat, lng])
+      .bindPopup('<b>Ubicación del Proyecto</b><br>Lat: ' + lat + '<br>Lng: ' + lng)
+      .openPopup();
+    leafletMap.invalidateSize();
+  }
+  toast('✅ Mapa cargado correctamente');
 }
  
 // ══ TOAST ══
