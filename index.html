@@ -573,9 +573,10 @@ textarea.form-control{resize:vertical;min-height:140px;line-height:1.7;}
         <div class="map-placeholder" id="mapPlaceholder">
           <div class="map-placeholder-icon">🗺️</div>
           <div style="font-size:13px;font-weight:600;color:var(--dark);">Ingresa las coordenadas y carga el mapa</div>
-          <div style="font-size:12px;">O haz clic en "Cargar mapa aquí"</div>
+          <div style="font-size:12px;">Clic en "Cargar mapa aquí"</div>
         </div>
-        <div id="leafletMap" style="display:none;"></div>
+        <div id="leafletMap" style="display:none;width:100%;height:400px;"></div>
+        <img id="mapImg" style="display:none;width:100%;height:400px;object-fit:cover;border-radius:10px;" alt="Mapa">
       </div>
     </div>
 
@@ -1104,34 +1105,112 @@ let leafletMap = null;
 let leafletMarker = null;
 
 function cargarMapa() {
-  const lat = parseFloat(document.getElementById('proj_lat').value.trim());
-  const lng = parseFloat(document.getElementById('proj_lng').value.trim());
-  if (!lat || !lng || isNaN(lat) || isNaN(lng)) { 
-    toast('Ingresa latitud y longitud válidas'); 
-    return; 
-  }
+  const latVal = document.getElementById('proj_lat').value.trim();
+  const lngVal = document.getElementById('proj_lng').value.trim();
+  const lat = parseFloat(latVal);
+  const lng = parseFloat(lngVal);
   
-  document.getElementById('mapPlaceholder').style.display = 'none';
-  const mapDiv = document.getElementById('leafletMap');
-  mapDiv.style.display = 'block';
-
-  if (!leafletMap) {
-    leafletMap = L.map('leafletMap').setView([lat, lng], 15);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 19
-    }).addTo(leafletMap);
-    leafletMarker = L.marker([lat, lng]).addTo(leafletMap)
-      .bindPopup('<b>Ubicación del Proyecto</b><br>Lat: ' + lat + '<br>Lng: ' + lng)
-      .openPopup();
-  } else {
-    leafletMap.setView([lat, lng], 15);
-    leafletMarker.setLatLng([lat, lng])
-      .bindPopup('<b>Ubicación del Proyecto</b><br>Lat: ' + lat + '<br>Lng: ' + lng)
-      .openPopup();
-    leafletMap.invalidateSize();
+  if (!latVal || !lngVal || isNaN(lat) || isNaN(lng)) {
+    toast('Ingresa latitud y longitud válidas');
+    return;
   }
-  toast('✅ Mapa cargado correctamente');
+
+  document.getElementById('mapPlaceholder').style.display = 'none';
+
+  // Intento 1: Leaflet interactivo
+  try {
+    const mapDiv = document.getElementById('leafletMap');
+    mapDiv.style.display = 'block';
+    document.getElementById('mapImg').style.display = 'none';
+
+    if (!leafletMap) {
+      leafletMap = L.map('leafletMap', {
+        center: [lat, lng],
+        zoom: 15,
+        zoomControl: true
+      });
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        maxZoom: 19,
+        crossOrigin: true
+      }).addTo(leafletMap);
+
+      // Fallback tiles si falla el primero
+      leafletMap.on('tileerror', function() {
+        usarMapaEstatico(lat, lng);
+      });
+
+      const icon = L.divIcon({
+        html: `<div style="background:#1C1E21;width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);"></div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 28],
+        className: ''
+      });
+
+      leafletMarker = L.marker([lat, lng], {icon})
+        .addTo(leafletMap)
+        .bindPopup(`<b style="font-family:sans-serif">📍 Proyecto</b><br>
+          <span style="font-family:monospace;font-size:11px">${lat}, ${lng}</span>`)
+        .openPopup();
+
+    } else {
+      leafletMap.setView([lat, lng], 15);
+      leafletMarker.setLatLng([lat, lng]).openPopup();
+      setTimeout(() => leafletMap.invalidateSize(), 200);
+    }
+
+    toast('✅ Mapa cargado');
+
+    // Verificar si los tiles cargaron después de 3 segundos
+    setTimeout(() => {
+      const mapContainer = document.getElementById('leafletMap');
+      const canvas = mapContainer.querySelector('canvas');
+      const tiles = mapContainer.querySelectorAll('.leaflet-tile-loaded');
+      if (tiles.length === 0) {
+        usarMapaEstatico(lat, lng);
+      }
+    }, 3000);
+
+  } catch(e) {
+    usarMapaEstatico(lat, lng);
+  }
+}
+
+function usarMapaEstatico(lat, lng) {
+  // Fallback: imagen estática via OpenStreetMap staticmap
+  document.getElementById('leafletMap').style.display = 'none';
+  const img = document.getElementById('mapImg');
+  
+  // Usar un servicio de mapa estático que siempre funciona
+  // StaticMap via geoapify (gratuito sin key para uso básico)
+  const zoom = 15;
+  const w = 800, h = 400;
+  
+  // Intentar con staticmap.net (gratuito)
+  img.src = `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=${zoom}&size=${w}x${h}&markers=${lat},${lng},red-pushpin`;
+  img.style.display = 'block';
+  
+  img.onerror = () => {
+    // Último fallback: mostrar enlace directo
+    img.style.display = 'none';
+    const frame = document.getElementById('mapFrame');
+    frame.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;padding:20px;text-align:center;">
+        <div style="font-size:40px;">📍</div>
+        <div style="font-weight:700;font-size:15px;">Coordenadas registradas</div>
+        <div style="font-family:monospace;font-size:13px;background:#f0f0f0;padding:8px 16px;border-radius:6px;">${lat}, ${lng}</div>
+        <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" 
+           style="background:#1C1E21;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;">
+          📍 Ver en Google Maps
+        </a>
+        <a href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}&zoom=15" target="_blank"
+           style="background:transparent;color:#1C1E21;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;border:2px solid #B8BCC5;">
+          🗺️ Ver en OpenStreetMap
+        </a>
+      </div>`;
+  };
+  toast('Mostrando ubicación en mapa');
 }
 
 // ══ TOAST ══
